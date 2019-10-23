@@ -189,9 +189,9 @@ function add_employee() {
                 ]).then(function({first_name, last_name, role_id, manager_id}) {
                     let queryText = `INSERT INTO employee (first_name, last_name, role_id`;
                     if (manager_id != 'none') {
-                        queryText += `, manager_id) VALUES ('${first_name}', '${last_name}', ${roles.indexOf(role_id)}, ${employees.indexOf(manager_id)})`
+                        queryText += `, manager_id) VALUES ('${first_name}', '${last_name}', ${roles.indexOf(role_id)}, ${employees.indexOf(manager_id) + 1})`
                     } else {
-                        queryText += `) VALUES ('${first_name}', '${last_name}', ${roles.indexOf(role_id)})`
+                        queryText += `) VALUES ('${first_name}', '${last_name}', ${roles.indexOf(role_id) + 1})`
                     }
                     console.log(queryText)
 
@@ -226,5 +226,68 @@ function view() {
 }
 
 function update() {
+    inquirer
+        .prompt(
+            {
+                name: 'update',
+                message: 'What would you like to update?',
+                type: 'list',
+                choices: ['role', 'manager']
+            }
+        ).then(function ({update}) {
+            switch(update) {
+                case 'role':
+                    update_role();
+                    break;
+                case 'manager':
+                    update_manager();
+                    break;
+            }
+        })
+}
 
+function update_role() {
+    connection.query(`SELECT * FROM employee`, function (err, data) {
+        if (err) throw err;
+
+        let employees = [];
+        let roles = [];
+
+        for (let i = 0; i < data.length; i++) {
+            employees.push(data[i].first_name)
+        }
+
+        connection.query(`SELECT * FROM role`, function (err, data) {
+            if (err) throw err;
+
+            for (let i = 0; i < data.length; i++) {
+                roles.push(data[i].title)
+            }
+
+            inquirer
+                .prompt([
+                    {
+                        name: 'employee_id',
+                        message: "Who's role needs to be updated",
+                        type: 'list',
+                        choices: employees
+                    },
+                    {
+                        name: 'role_id',
+                        message: "What is the new role?",
+                        type: 'list',
+                        choices: roles
+                    }
+                ]).then(function ({employee_id, role_id}) {
+                    //UPDATE `table_name` SET `column_name` = `new_value' [WHERE condition]
+                    console.log (roles.indexOf(role_id))
+                    connection.query(`UPDATE employee SET role_id = ${roles.indexOf(role_id) + 1} WHERE id = ${employees.indexOf(employee_id) + 1}`, function (err, data) {
+                        if (err) throw err;
+
+                        getJob();
+                    })
+                })
+        })
+
+    })
 }
