@@ -179,14 +179,14 @@ function add_employee() {
                         message: 'What is their role?',
                         type: 'list',
                         choices: roles,
-                    }, 
+                    },
                     {
                         name: 'manager_id',
                         message: "Who is their manager?",
                         type: 'list',
                         choices: ['none'].concat(employees)
                     }
-                ]).then(function({first_name, last_name, role_id, manager_id}) {
+                ]).then(function ({ first_name, last_name, role_id, manager_id }) {
                     let queryText = `INSERT INTO employee (first_name, last_name, role_id`;
                     if (manager_id != 'none') {
                         queryText += `, manager_id) VALUES ('${first_name}', '${last_name}', ${roles.indexOf(role_id)}, ${employees.indexOf(manager_id) + 1})`
@@ -195,7 +195,7 @@ function add_employee() {
                     }
                     console.log(queryText)
 
-                    connection.query(queryText, function(err, data) {
+                    connection.query(queryText, function (err, data) {
                         if (err) throw err;
 
                         getJob();
@@ -203,7 +203,7 @@ function add_employee() {
                 })
 
         })
-    })    
+    })
 }
 
 function view() {
@@ -234,8 +234,8 @@ function update() {
                 type: 'list',
                 choices: ['role', 'manager']
             }
-        ).then(function ({update}) {
-            switch(update) {
+        ).then(function ({ update }) {
+            switch (update) {
                 case 'role':
                     update_role();
                     break;
@@ -278,7 +278,7 @@ function update_role() {
                         type: 'list',
                         choices: roles
                     }
-                ]).then(function ({employee_id, role_id}) {
+                ]).then(function ({ employee_id, role_id }) {
                     //UPDATE `table_name` SET `column_name` = `new_value' [WHERE condition]
                     connection.query(`UPDATE employee SET role_id = ${roles.indexOf(role_id) + 1} WHERE id = ${employees.indexOf(employee_id) + 1}`, function (err, data) {
                         if (err) throw err;
@@ -301,21 +301,39 @@ function update_manager() {
             employees.push(data[i].first_name)
         }
 
+
+
+
         inquirer
             .prompt([
                 {
-                    name: 'name',
+                    name: 'employee_id',
                     message: 'Who would you like to update?',
                     type: 'list',
-                    chocies: employees
+                    choices: employees
                 },
                 {
                     name: "manager_id",
-                    message: "Who's the new manager?",
+                    message: "Who's their new manager?",
                     type: 'list',
                     choices: ['none'].concat(employees)
                 }
-            ]).then(({name, manager_id}))
+            ]).then(({ employee_id, manager_id }) => {
+                let queryText = ""
+                if (manager_id !== "none") {
+                   queryText = `UPDATE employee SET manager_id = ${employees.indexOf(manager_id) + 1} WHERE id = ${employees.indexOf(employee_id) + 1}`
+                } else {
+                    queryText = `UPDATE employee SET manager_id = ${null} WHERE id = ${employees.indexOf(employee_id) + 1}`
+                }
+
+                connection.query(queryText, function (err, data) {
+                    if (err) throw err;
+
+                    getJob();
+                })
+
+            })
+
     });
 
 }
