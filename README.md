@@ -1,0 +1,1 @@
+An app for managing employees; Shows off use of mysql.
