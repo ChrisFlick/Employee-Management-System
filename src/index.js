@@ -280,7 +280,6 @@ function update_role() {
                     }
                 ]).then(function ({employee_id, role_id}) {
                     //UPDATE `table_name` SET `column_name` = `new_value' [WHERE condition]
-                    console.log (roles.indexOf(role_id))
                     connection.query(`UPDATE employee SET role_id = ${roles.indexOf(role_id) + 1} WHERE id = ${employees.indexOf(employee_id) + 1}`, function (err, data) {
                         if (err) throw err;
 
@@ -290,4 +289,33 @@ function update_role() {
         })
 
     })
+}
+
+function update_manager() {
+    connection.query(`SELECT * FROM employee`, function (err, data) {
+        if (err) throw err;
+
+        let employees = [];
+
+        for (let i = 0; i < data.length; i++) {
+            employees.push(data[i].first_name)
+        }
+
+        inquirer
+            .prompt([
+                {
+                    name: 'name',
+                    message: 'Who would you like to update?',
+                    type: 'list',
+                    chocies: employees
+                },
+                {
+                    name: "manager_id",
+                    message: "Who's the new manager?",
+                    type: 'list',
+                    choices: ['none'].concat(employees)
+                }
+            ]).then(({name, manager_id}))
+    });
+
 }
